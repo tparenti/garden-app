@@ -59,6 +59,7 @@ type Store interface {
 	GetBedCell(ctx context.Context, id int64) (*models.BedCell, error)
 	SetBedCell(ctx context.Context, c *models.BedCell) error
 	ClearBedCell(ctx context.Context, id int64) error
+	BulkSetBedCells(ctx context.Context, cellIDs []int64, seedID *int64, label, status string) ([]models.BedCell, error)
 	TransplantCell(ctx context.Context, trayCellID, bedID int64, row, col int) error
 
 	// Timeline

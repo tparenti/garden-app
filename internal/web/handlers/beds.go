@@ -27,6 +27,12 @@ type bedsViewData struct {
 	Flash string
 	Error string
 	Bed   *models.RaisedBed
+	Seeds []models.Seed
+}
+
+type bedBulkResultData struct {
+	BedID int64
+	Cells []models.BedCell
 }
 
 type bedCellFormData struct {
@@ -119,9 +125,11 @@ func (h *Handler) BedsView(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	seeds, _ := h.store.ListSeeds(r.Context())
 	h.render(w, "beds_view", bedsViewData{
 		Flash: r.URL.Query().Get("flash"),
 		Bed:   bed,
+		Seeds: seeds,
 	})
 }
 
@@ -224,6 +232,61 @@ func (h *Handler) BedsCellSave(w http.ResponseWriter, r *http.Request) {
 	h.renderPartial(w, "beds_view", "bed-cell-oob", bedCellPartialData{
 		BedID: bedID,
 		Cell:  *cell,
+	})
+}
+
+func (h *Handler) BedsCellsBulkSet(w http.ResponseWriter, r *http.Request) {
+	bedID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "invalid bed id", http.StatusBadRequest)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	ctx := r.Context()
+
+	cellIDStrs := r.Form["cell_ids"]
+	if len(cellIDStrs) == 0 {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	cellIDs := make([]int64, 0, len(cellIDStrs))
+	for _, s := range cellIDStrs {
+		if id, err := strconv.ParseInt(s, 10, 64); err == nil {
+			cellIDs = append(cellIDs, id)
+		}
+	}
+
+	var seedID *int64
+	label := r.FormValue("label")
+	if seedStr := r.FormValue("seed_id"); seedStr != "" {
+		if sid, err := strconv.ParseInt(seedStr, 10, 64); err == nil && sid > 0 {
+			seedID = &sid
+			if label == "" {
+				if s, err := h.store.GetSeed(ctx, sid); err == nil && s != nil {
+					label = s.Name
+					if s.Variety != "" {
+						label += " " + s.Variety
+					}
+				}
+			}
+		}
+	}
+	status := r.FormValue("status")
+	if status == "" {
+		status = "planted"
+	}
+
+	cells, err := h.store.BulkSetBedCells(ctx, cellIDs, seedID, label, status)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	h.renderPartial(w, "beds_view", "bed-bulk-result", bedBulkResultData{
+		BedID: bedID,
+		Cells: cells,
 	})
 }
 

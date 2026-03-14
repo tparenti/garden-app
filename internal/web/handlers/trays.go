@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/alexramsey92/garden-app/internal/models"
@@ -394,18 +395,13 @@ func parseTrayCell(w http.ResponseWriter, r *http.Request) (trayID, cellID int64
 
 // parseGridSize returns rows, cols from a preset size string or custom inputs.
 func parseGridSize(preset, rowStr, colStr string) (rows, cols int) {
-	presets := map[string][2]int{
-		"2x4":  {2, 4},
-		"2x8":  {2, 8},
-		"4x6":  {4, 6},
-		"6x6":  {6, 6},
-		"6x9":  {6, 9},
-		"6x12": {6, 12},
-		"6x18": {6, 18},
-		"12x6": {12, 6},
-	}
-	if p, ok := presets[preset]; ok {
-		return p[0], p[1]
+	// Try parsing "RxC" preset format directly (e.g. "4x8", "3x10")
+	if parts := strings.SplitN(preset, "x", 2); len(parts) == 2 {
+		if r, err := strconv.Atoi(parts[0]); err == nil {
+			if c, err := strconv.Atoi(parts[1]); err == nil {
+				return r, c
+			}
+		}
 	}
 	rows, _ = strconv.Atoi(rowStr)
 	cols, _ = strconv.Atoi(colStr)

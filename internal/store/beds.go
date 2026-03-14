@@ -202,6 +202,48 @@ func (s *SQLiteStore) TransplantCell(ctx context.Context, trayCellID, bedID int6
 	return tx.Commit()
 }
 
+func (s *SQLiteStore) BulkSetBedCells(ctx context.Context, cellIDs []int64, seedID *int64, label, status string) ([]models.BedCell, error) {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback()
+
+	now := time.Now()
+	for _, id := range cellIDs {
+		var plantedAt, harvestedAt, failedAt *time.Time
+		switch status {
+		case "planted", "growing":
+			plantedAt = &now
+		case "harvested":
+			harvestedAt = &now
+		case "failed":
+			failedAt = &now
+		}
+		if _, err := tx.ExecContext(ctx, `
+			UPDATE bed_cells
+			SET seed_id=?, label=?, status=?, planted_at=?, harvested_at=?, failed_at=?, notes=''
+			WHERE id=?`,
+			seedID, label, status, plantedAt, harvestedAt, failedAt, id,
+		); err != nil {
+			return nil, fmt.Errorf("bulk update bed cell %d: %w", id, err)
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("commit: %w", err)
+	}
+
+	cells := make([]models.BedCell, 0, len(cellIDs))
+	for _, id := range cellIDs {
+		c, err := s.GetBedCell(ctx, id)
+		if err != nil || c == nil {
+			continue
+		}
+		cells = append(cells, *c)
+	}
+	return cells, nil
+}
+
 func (s *SQLiteStore) ListTimeline(ctx context.Context) ([]models.TimelineItem, error) {
 	const q = `
 	SELECT

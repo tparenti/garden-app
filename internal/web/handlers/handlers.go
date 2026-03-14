@@ -102,6 +102,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /beds/{id}/cells/{cid}/edit", h.BedsCellEditForm)
 	mux.HandleFunc("POST /beds/{id}/cells/{cid}", h.BedsCellSave)
 	mux.HandleFunc("DELETE /beds/{id}/cells/{cid}", h.BedsCellClear)
+	mux.HandleFunc("POST /beds/{id}/cells/bulk", h.BedsCellsBulkSet)
 
 	// Timeline
 	mux.HandleFunc("GET /timeline", h.Timeline)

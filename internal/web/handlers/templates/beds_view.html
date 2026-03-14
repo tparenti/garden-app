@@ -19,16 +19,31 @@
     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-600 inline-block"></span> Growing</span>
     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Harvested</span>
     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-400 inline-block"></span> Failed</span>
-    <span class="text-stone-600">· Click any cell to edit</span>
   </div>
 
   <!-- Grid -->
-  <div class="bg-stone-50 rounded-xl border border-gray-200 p-4 overflow-x-auto">
+  <div id="bed-grid-container" class="bg-stone-800 border border-stone-700 rounded-xl p-5 overflow-x-auto">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs text-stone-500">Click a cell to edit &middot; or select multiple</span>
+      <button type="button" id="select-mode-btn"
+              onclick="toggleSelectMode()"
+              class="text-xs px-3 py-1.5 rounded-lg border border-stone-600 text-stone-300 hover:border-green-500 hover:text-green-400 transition-colors">
+        &#9633; Select Cells
+      </button>
+    </div>
     <table class="border-collapse">
+      <thead>
+        <tr>
+          <th class="w-7"></th>
+          {{range $colIdx, $_ := (index .Bed.Cells 0)}}
+          <th class="text-xs text-stone-500 font-normal pb-1 text-center w-14" style="min-width:3.5rem">{{$colIdx}}</th>
+          {{end}}
+        </tr>
+      </thead>
       <tbody>
         {{range $rowIdx, $row := .Bed.Cells}}
         <tr>
-          <td class="text-xs text-gray-300 pr-2 text-right w-6 select-none">{{$rowIdx}}</td>
+          <td class="text-xs text-stone-500 pr-2 text-right w-7 select-none">{{$rowIdx}}</td>
           {{range $row}}
           {{template "bed-cell" (bedCellData $.Bed.ID .)}}
           {{end}}
@@ -44,22 +59,71 @@
     </div>
   </div>
 
+  <!-- Bulk assign panel -->
+  <div id="bulk-panel" class="hidden fixed bottom-0 left-0 right-0 z-50 bg-stone-900 border-t-2 border-green-500 shadow-2xl px-4 py-4">
+    <form id="bulk-form"
+          hx-post="/beds/{{.Bed.ID}}/cells/bulk"
+          hx-swap="none"
+          hx-on:htmx:after-request="htmxBulkDone()"
+          class="max-w-2xl mx-auto flex flex-wrap items-end gap-3">
+      <div id="bulk-cell-ids"></div>
+      <div class="text-sm font-semibold text-green-400 min-w-max">
+        <span id="bulk-count">0</span> cells selected
+      </div>
+      <div>
+        <label class="block text-xs text-stone-400 mb-1">Seed</label>
+        <select name="seed_id" class="bg-stone-800 border border-stone-600 text-stone-100 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500">
+          <option value="">&#8212; no seed &#8212;</option>
+          {{range .Seeds}}
+          <option value="{{.ID}}">{{.Name}}{{if .Variety}} &middot; {{.Variety}}{{end}}</option>
+          {{end}}
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-stone-400 mb-1">Label <span class="text-stone-600">(optional)</span></label>
+        <input type="text" name="label" placeholder="auto from seed"
+               class="bg-stone-800 border border-stone-600 text-stone-100 placeholder-stone-600 rounded-lg px-3 py-1.5 text-sm w-36 focus:outline-none focus:ring-1 focus:ring-green-500">
+      </div>
+      <div>
+        <label class="block text-xs text-stone-400 mb-1">Status</label>
+        <select name="status" class="bg-stone-800 border border-stone-600 text-stone-100 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500">
+          <option value="planted">Planted</option>
+          <option value="growing">Growing</option>
+          <option value="harvested">Harvested</option>
+          <option value="failed">Failed</option>
+          <option value="empty">Clear (empty)</option>
+        </select>
+      </div>
+      <div class="flex gap-2 ml-auto">
+        <button type="submit"
+                class="bg-green-600 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-green-700 transition-colors font-medium">
+          Apply to cells
+        </button>
+        <button type="button" onclick="toggleSelectMode()"
+                class="bg-stone-700 text-stone-200 text-sm px-4 py-1.5 rounded-lg hover:bg-stone-600 transition-colors">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+
 </div>
 {{end}}
 
 {{define "bed-cell"}}
 <td id="bcell-{{.Cell.ID}}"
-    class="w-10 h-10 border border-gray-200 cursor-pointer relative {{cellBg .Cell.Label .Cell.Status}}"
+    data-cell-id="{{.Cell.ID}}"
+    class="w-14 h-14 border border-stone-600 cursor-pointer relative {{cellBg .Cell.Label .Cell.Status}}"
     hx-get="/beds/{{.BedID}}/cells/{{.Cell.ID}}/edit"
     hx-target="#edit-panel > div"
     hx-swap="innerHTML">
   {{if ne .Cell.Status "empty"}}
-  <div class="flex items-center justify-center h-full overflow-hidden px-0.5">
-    <span class="text-xs font-semibold leading-none text-center {{cellText .Cell.Label .Cell.Status}}" style="font-size:9px">
-      {{abbrev .Cell.Label 5}}
+  <div class="flex items-center justify-center h-full overflow-hidden px-1">
+    <span class="text-xs font-semibold leading-tight text-center {{cellText .Cell.Label .Cell.Status}}" style="font-size:11px">
+      {{abbrev .Cell.Label 6}}
     </span>
   </div>
-  <span class="absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full {{statusDot .Cell.Status}}"></span>
+  <span class="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full {{statusDot .Cell.Status}}"></span>
   {{if .Cell.SourceTrayCellID}}
   <span class="absolute top-0.5 left-0.5 text-purple-400" style="font-size:8px">↑</span>
   {{end}}
@@ -69,17 +133,18 @@
 
 {{define "bed-cell-oob"}}
 <td id="bcell-{{.Cell.ID}}" hx-swap-oob="outerHTML"
-    class="w-10 h-10 border border-gray-200 cursor-pointer relative {{cellBg .Cell.Label .Cell.Status}}"
+    data-cell-id="{{.Cell.ID}}"
+    class="w-14 h-14 border border-stone-600 cursor-pointer relative {{cellBg .Cell.Label .Cell.Status}}"
     hx-get="/beds/{{.BedID}}/cells/{{.Cell.ID}}/edit"
     hx-target="#edit-panel > div"
     hx-swap="innerHTML">
   {{if ne .Cell.Status "empty"}}
-  <div class="flex items-center justify-center h-full overflow-hidden px-0.5">
-    <span class="text-xs font-semibold leading-none text-center {{cellText .Cell.Label .Cell.Status}}" style="font-size:9px">
-      {{abbrev .Cell.Label 5}}
+  <div class="flex items-center justify-center h-full overflow-hidden px-1">
+    <span class="text-xs font-semibold leading-tight text-center {{cellText .Cell.Label .Cell.Status}}" style="font-size:11px">
+      {{abbrev .Cell.Label 6}}
     </span>
   </div>
-  <span class="absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full {{statusDot .Cell.Status}}"></span>
+  <span class="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full {{statusDot .Cell.Status}}"></span>
   {{if .Cell.SourceTrayCellID}}
   <span class="absolute top-0.5 left-0.5 text-purple-400" style="font-size:8px">↑</span>
   {{end}}
@@ -87,23 +152,27 @@
 </td>
 {{end}}
 
+{{define "bed-bulk-result"}}
+{{range .Cells}}{{template "bed-cell-oob" (bedCellData $.BedID .)}}{{end}}
+{{end}}
+
 {{define "bed-cell-form"}}
-<div class="bg-stone-50 border-t-2 border-green-400 shadow-2xl p-4 max-w-sm mx-auto rounded-t-xl">
+<div class="bg-stone-900 border-t-2 border-green-500 shadow-2xl p-4 max-w-sm mx-auto rounded-t-xl">
   <div class="flex items-center justify-between mb-3">
-    <h3 class="font-semibold text-gray-800 text-sm">
+    <h3 class="font-semibold text-stone-100 text-sm">
       {{.BedName}} · row {{.Cell.Row}}, col {{.Cell.Col}}
-      {{if ne .Cell.Label ""}}<span class="font-normal text-gray-500">— {{.Cell.Label}}</span>{{end}}
+      {{if ne .Cell.Label ""}}<span class="font-normal text-stone-400">— {{.Cell.Label}}</span>{{end}}
     </h3>
     <button type="button" onclick="document.getElementById('edit-panel').querySelector('div').innerHTML=''"
-            class="text-gray-400 hover:text-gray-600 text-xl leading-none ml-2">×</button>
+            class="text-stone-400 hover:text-stone-200 text-xl leading-none ml-2">×</button>
   </div>
   <form hx-post="/beds/{{.BedID}}/cells/{{.Cell.ID}}"
         hx-target="#edit-panel > div"
         hx-swap="innerHTML"
         class="space-y-2">
     <div>
-      <label class="text-xs text-gray-500">Seed</label>
-      <select name="seed_id" class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 bg-stone-50">
+      <label class="text-xs text-stone-400">Seed</label>
+      <select name="seed_id" class="w-full text-sm bg-stone-800 border border-stone-600 text-stone-100 rounded px-2 py-1.5">
         <option value="">— none —</option>
         {{range .Seeds}}
         <option value="{{.ID}}" {{if eq (deref $.Cell.SeedID) .ID}}selected{{end}}>
@@ -113,14 +182,14 @@
       </select>
     </div>
     <div>
-      <label class="text-xs text-gray-500">Label</label>
+      <label class="text-xs text-stone-400">Label</label>
       <input type="text" name="label" value="{{.Cell.Label}}" placeholder="e.g. Tomato, Pepper"
-             class="w-full text-sm border border-gray-200 rounded px-2 py-1.5">
+             class="w-full text-sm bg-stone-800 border border-stone-600 text-stone-100 placeholder-stone-600 rounded px-2 py-1.5">
     </div>
     <div class="flex gap-2">
       <div class="flex-1">
-        <label class="text-xs text-gray-500">Status</label>
-        <select name="status" class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 bg-stone-50">
+        <label class="text-xs text-stone-400">Status</label>
+        <select name="status" class="w-full text-sm bg-stone-800 border border-stone-600 text-stone-100 rounded px-2 py-1.5">
           <option value="empty"     {{if eq .Cell.Status "empty"}}selected{{end}}>Empty</option>
           <option value="planted"   {{if eq .Cell.Status "planted"}}selected{{end}}>Planted</option>
           <option value="growing"   {{if eq .Cell.Status "growing"}}selected{{end}}>Growing</option>
@@ -130,12 +199,12 @@
       </div>
     </div>
     {{if .Cell.SourceTrayCellID}}
-    <p class="text-xs text-purple-500">↑ Transplanted from tray</p>
+    <p class="text-xs text-purple-400">↑ Transplanted from tray</p>
     {{end}}
     <div>
-      <label class="text-xs text-gray-500">Notes</label>
+      <label class="text-xs text-stone-400">Notes</label>
       <input type="text" name="notes" value="{{.Cell.Notes}}"
-             class="w-full text-sm border border-gray-200 rounded px-2 py-1.5">
+             class="w-full text-sm bg-stone-800 border border-stone-600 text-stone-100 placeholder-stone-600 rounded px-2 py-1.5">
     </div>
     <div class="flex gap-2 pt-1">
       <button type="submit"
@@ -147,7 +216,7 @@
               hx-delete="/beds/{{.BedID}}/cells/{{.Cell.ID}}"
               hx-target="#edit-panel > div"
               hx-swap="innerHTML"
-              class="px-3 bg-stone-200 text-gray-600 text-sm rounded-lg py-1.5 hover:bg-gray-200 transition-colors">
+              class="px-3 bg-stone-700 text-stone-200 text-sm rounded-lg py-1.5 hover:bg-stone-600 transition-colors">
         Clear
       </button>
       {{end}}
@@ -155,3 +224,71 @@
   </form>
 </div>
 {{end}}
+
+<script>
+(function() {
+  var selectMode = false;
+  var selected = new Set();
+
+  window.toggleSelectMode = function() {
+    selectMode = !selectMode;
+    var btn = document.getElementById('select-mode-btn');
+    var panel = document.getElementById('bulk-panel');
+    var editPanel = document.getElementById('edit-panel');
+    if (selectMode) {
+      btn.textContent = '✕ Cancel selection';
+      btn.className = 'text-xs px-3 py-1.5 rounded-lg border border-red-600 text-red-400 hover:border-red-400 transition-colors';
+      panel.classList.remove('hidden');
+      editPanel.querySelector('div').innerHTML = '';
+    } else {
+      clearBulkSelection();
+    }
+  };
+
+  window.clearBulkSelection = function() {
+    selectMode = false;
+    selected.clear();
+    var btn = document.getElementById('select-mode-btn');
+    btn.textContent = '⊞ Select Cells';
+    btn.className = 'text-xs px-3 py-1.5 rounded-lg border border-stone-600 text-stone-300 hover:border-green-500 hover:text-green-400 transition-colors';
+    document.getElementById('bulk-panel').classList.add('hidden');
+    document.querySelectorAll('td.cell-selected').forEach(function(el) {
+      el.classList.remove('cell-selected', 'outline', 'outline-2', 'outline-green-400', 'outline-offset-[-2px]', 'z-10');
+    });
+    syncHiddenInputs();
+    document.getElementById('bulk-count').textContent = '0';
+  };
+
+  window.htmxBulkDone = function() { clearBulkSelection(); };
+
+  function syncHiddenInputs() {
+    var container = document.getElementById('bulk-cell-ids');
+    container.innerHTML = '';
+    selected.forEach(function(id) {
+      var inp = document.createElement('input');
+      inp.type = 'hidden';
+      inp.name = 'cell_ids';
+      inp.value = id;
+      container.appendChild(inp);
+    });
+    document.getElementById('bulk-count').textContent = selected.size;
+  }
+
+  document.getElementById('bed-grid-container').addEventListener('click', function(e) {
+    if (!selectMode) return;
+    var cell = e.target.closest('td[data-cell-id]');
+    if (!cell) return;
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    var id = parseInt(cell.dataset.cellId, 10);
+    if (selected.has(id)) {
+      selected.delete(id);
+      cell.classList.remove('cell-selected', 'outline', 'outline-2', 'outline-green-400', 'outline-offset-[-2px]', 'z-10');
+    } else {
+      selected.add(id);
+      cell.classList.add('cell-selected', 'outline', 'outline-2', 'outline-green-400', 'outline-offset-[-2px]', 'z-10');
+    }
+    syncHiddenInputs();
+  }, true);
+})();
+</script>
