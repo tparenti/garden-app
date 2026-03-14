@@ -1,10 +1,10 @@
 {{define "content"}}
 <div class="max-w-2xl space-y-4">
 
-  <div class="flex items-center gap-3">
-    <a href="/plants" class="text-gray-400 hover:text-gray-600 text-sm">← Plants</a>
-    <h1 class="text-2xl font-bold text-gray-800">{{.Spec.Name}}
-      {{if .Spec.Variety}}<span class="text-gray-400 font-normal text-lg">— {{.Spec.Variety}}</span>{{end}}
+  <div class="rounded-xl bg-gradient-to-r from-emerald-900 to-stone-800 border border-stone-700 px-6 py-5">
+    <a href="/plants" class="text-stone-400 hover:text-stone-200 text-sm">← Plants</a>
+    <h1 class="text-2xl font-bold text-white mt-1">{{.Spec.Name}}
+      {{if .Spec.Variety}}<span class="text-stone-300 font-normal text-lg">— {{.Spec.Variety}}</span>{{end}}
     </h1>
   </div>
 

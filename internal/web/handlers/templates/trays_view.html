@@ -3,23 +3,23 @@
 
   <div class="flex items-center justify-between">
     <div>
-      <a href="/trays" class="text-sm text-gray-400 hover:text-gray-600">← Trays</a>
-      <h1 class="text-2xl font-bold text-gray-800 mt-0.5">{{.Tray.Name}}</h1>
-      <p class="text-sm text-gray-400">{{.Tray.Rows}} rows × {{.Tray.Cols}} cols · {{imul .Tray.Rows .Tray.Cols}} cells</p>
+      <a href="/trays" class="text-sm text-stone-400 hover:text-stone-200">← Trays</a>
+      <h1 class="text-2xl font-bold text-stone-100 mt-0.5">{{.Tray.Name}}</h1>
+      <p class="text-sm text-stone-400">{{.Tray.Rows}} rows × {{.Tray.Cols}} cols · {{imul .Tray.Rows .Tray.Cols}} cells</p>
     </div>
     <div class="flex gap-2">
-      <a href="/timeline" class="text-sm text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-stone-100">Timeline →</a>
+      <a href="/timeline" class="text-sm text-stone-300 border border-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-700">Timeline →</a>
     </div>
   </div>
 
   <!-- Legend -->
-  <div class="flex flex-wrap gap-3 text-xs text-gray-500">
-    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-transparent border border-gray-300 inline-block"></span> Empty</span>
+  <div class="flex flex-wrap gap-3 text-xs text-stone-400">
+    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-transparent border border-stone-500 inline-block"></span> Empty</span>
     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-400 inline-block"></span> Sown</span>
     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> Germinated</span>
     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span> Transplanted</span>
     <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-400 inline-block"></span> Failed</span>
-    <span class="text-gray-300">· Click any cell to edit</span>
+    <span class="text-stone-600">· Click any cell to edit</span>
   </div>
 
   <!-- Grid -->

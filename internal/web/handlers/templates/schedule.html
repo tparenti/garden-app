@@ -1,15 +1,16 @@
 {{define "content"}}
 <div class="space-y-4">
 
-  <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-gray-800">Planting Schedule</h1>
-    <div class="flex gap-2">
-      <a href="/schedule/suggest" class="text-sm bg-stone-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-stone-100 transition-colors">
-        Suggest Dates
-      </a>
-      <a href="/schedule/new" class="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-        + Add Entry
-      </a>
+  <!-- Page hero -->
+  <div class="rounded-xl bg-gradient-to-r from-violet-900 to-stone-800 border border-stone-700 px-6 py-5 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Planting Schedule</h1>
+      <p class="text-stone-300 text-sm mt-0.5">Plan and track your plantings</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="text-4xl select-none">📅 🌱 🗓️</div>
+      <a href="/schedule/suggest" class="text-sm bg-stone-700 border border-stone-600 text-stone-100 px-4 py-2 rounded-lg hover:bg-stone-600 transition-colors">Suggest Dates</a>
+      <a href="/schedule/new" class="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">+ Add Entry</a>
     </div>
   </div>
 

@@ -1,7 +1,14 @@
 {{define "content"}}
 <div class="max-w-lg space-y-4">
 
-  <h1 class="text-2xl font-bold text-gray-800">Locale & Frost Dates</h1>
+  <!-- Page hero -->
+  <div class="rounded-xl bg-gradient-to-r from-sky-900 to-stone-800 border border-stone-700 px-6 py-5 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Locale & Frost Dates</h1>
+      <p class="text-stone-300 text-sm mt-0.5">Set your growing region</p>
+    </div>
+    <div class="text-4xl select-none">🗺️ ❄️ 🌡️</div>
+  </div>
 
   <!-- Current frost info -->
   {{if or .Zip .State}}
