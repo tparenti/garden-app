@@ -1,0 +1,86 @@
+{{define "content"}}
+<div class="max-w-2xl space-y-4">
+
+  <div class="flex items-center gap-3">
+    <a href="/plants" class="text-gray-400 hover:text-gray-600 text-sm">← Plants</a>
+    <h1 class="text-2xl font-bold text-gray-800">{{.Spec.Name}}
+      {{if .Spec.Variety}}<span class="text-gray-400 font-normal text-lg">— {{.Spec.Variety}}</span>{{end}}
+    </h1>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+
+    <div class="px-6 py-4 grid grid-cols-2 gap-6 text-sm">
+      <div>
+        <div class="text-gray-500 text-xs uppercase font-medium mb-1">Days to Germinate</div>
+        <div class="font-semibold text-gray-800">{{.Spec.DaysToGermination}} days</div>
+      </div>
+      <div>
+        <div class="text-gray-500 text-xs uppercase font-medium mb-1">Days to Maturity</div>
+        <div class="font-semibold text-gray-800">{{.Spec.DaysToMaturity}} days</div>
+      </div>
+      <div>
+        <div class="text-gray-500 text-xs uppercase font-medium mb-1">Spacing</div>
+        <div class="font-semibold text-gray-800">{{.Spec.SpacingInches}}"</div>
+      </div>
+      <div>
+        <div class="text-gray-500 text-xs uppercase font-medium mb-1">Planting Depth</div>
+        <div class="font-semibold text-gray-800">{{.Spec.DepthInches}}"</div>
+      </div>
+      <div>
+        <div class="text-gray-500 text-xs uppercase font-medium mb-1">Sun</div>
+        <div class="font-semibold text-gray-800">{{.Spec.SunRequirement}}</div>
+      </div>
+      <div>
+        <div class="text-gray-500 text-xs uppercase font-medium mb-1">Water</div>
+        <div class="font-semibold text-gray-800">{{.Spec.WaterRequirement}}</div>
+      </div>
+      <div>
+        <div class="text-gray-500 text-xs uppercase font-medium mb-1">Hardiness Zones</div>
+        <div class="font-semibold text-gray-800">{{.Spec.HardinessZoneMin}} – {{.Spec.HardinessZoneMax}}</div>
+      </div>
+    </div>
+
+    <!-- Planting schedule section -->
+    <div class="px-6 py-4 text-sm">
+      <div class="text-gray-500 text-xs uppercase font-medium mb-3">Planting Schedule</div>
+      <div class="space-y-2">
+        {{if .Spec.StartIndoors}}
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-blue-400 flex-shrink-0"></span>
+          <span class="text-gray-700">Start indoors <strong>{{.Spec.WeeksBeforeFrost}} weeks before</strong> last frost</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-purple-400 flex-shrink-0"></span>
+          <span class="text-gray-700">Transplant <strong>{{.Spec.WeeksAfterFrost}} weeks after</strong> last frost</span>
+        </div>
+        {{end}}
+        {{if .Spec.DirectSow}}
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-green-400 flex-shrink-0"></span>
+          {{if lt0 .Spec.WeeksAfterFrost}}
+          <span class="text-gray-700">Direct sow <strong>{{neg .Spec.WeeksAfterFrost}} weeks before</strong> last frost</span>
+          {{else}}
+          <span class="text-gray-700">Direct sow <strong>{{.Spec.WeeksAfterFrost}} weeks after</strong> last frost</span>
+          {{end}}
+        </div>
+        {{end}}
+      </div>
+    </div>
+
+    {{if .Spec.Notes}}
+    <div class="px-6 py-4 text-sm">
+      <div class="text-gray-500 text-xs uppercase font-medium mb-1">Notes</div>
+      <p class="text-gray-700">{{.Spec.Notes}}</p>
+    </div>
+    {{end}}
+
+  </div>
+
+  <a href="/schedule/suggest?spec={{.Spec.ID}}"
+     class="inline-block bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+    Suggest Planting Dates
+  </a>
+
+</div>
+{{end}}

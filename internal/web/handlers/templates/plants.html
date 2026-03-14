@@ -1,0 +1,80 @@
+{{define "content"}}
+<div class="space-y-4">
+
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-gray-800">Plant Library</h1>
+    <div class="text-sm text-gray-400">{{len .Specs}} specs</div>
+  </div>
+
+  <!-- Search -->
+  <div class="bg-white rounded-xl border border-gray-200 p-4">
+    <input
+      type="search"
+      name="q"
+      placeholder="Search plants..."
+      hx-get="/plants/search"
+      hx-trigger="input changed delay:300ms, search"
+      hx-target="#plant-rows"
+      hx-swap="innerHTML"
+      class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+    >
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-gray-500 text-xs uppercase border-b border-gray-200">
+        <tr>
+          <th class="px-5 py-3 text-left">Name</th>
+          <th class="px-5 py-3 text-left">Variety</th>
+          <th class="px-5 py-3 text-left">Maturity</th>
+          <th class="px-5 py-3 text-left">Sun</th>
+          <th class="px-5 py-3 text-left">Start Indoors</th>
+          <th class="px-5 py-3 text-left">Direct Sow</th>
+        </tr>
+      </thead>
+      <tbody id="plant-rows" class="divide-y divide-gray-100">
+        {{template "plant-rows" .}}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{{end}}
+
+{{define "plant-rows"}}
+{{range .Specs}}
+<tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='/plants/{{.ID}}'">
+  <td class="px-5 py-3 font-medium text-gray-800">{{.Name}}</td>
+  <td class="px-5 py-3 text-gray-600">{{.Variety}}</td>
+  <td class="px-5 py-3 text-gray-600">{{.DaysToMaturity}}d</td>
+  <td class="px-5 py-3">
+    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+      {{if eq .SunRequirement "full"}}bg-yellow-100 text-yellow-700
+      {{else if eq .SunRequirement "partial"}}bg-orange-100 text-orange-600
+      {{else}}bg-blue-100 text-blue-600{{end}}">
+      {{.SunRequirement}}
+    </span>
+  </td>
+  <td class="px-5 py-3 text-gray-500">
+    {{if .StartIndoors}}
+      <span class="text-blue-600">{{.WeeksBeforeFrost}}w before frost</span>
+    {{else}}
+      <span class="text-gray-300">—</span>
+    {{end}}
+  </td>
+  <td class="px-5 py-3 text-gray-500">
+    {{if .DirectSow}}
+      {{if lt0 .WeeksAfterFrost}}
+        <span class="text-green-600">{{neg .WeeksAfterFrost}}w before frost</span>
+      {{else}}
+        <span class="text-green-600">{{.WeeksAfterFrost}}w after frost</span>
+      {{end}}
+    {{else}}
+      <span class="text-gray-300">—</span>
+    {{end}}
+  </td>
+</tr>
+{{else}}
+<tr><td colspan="6" class="px-5 py-8 text-center text-gray-400">No plants found.</td></tr>
+{{end}}
+{{end}}

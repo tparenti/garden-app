@@ -1,0 +1,114 @@
+{{define "content"}}
+<div class="space-y-6">
+
+  <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-3 gap-4">
+    <div class="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+      <div class="text-4xl">🌻</div>
+      <div>
+        <div class="text-3xl font-bold text-green-700">{{.SeedCount}}</div>
+        <div class="text-sm text-gray-500 font-medium">Seed varieties</div>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+      <div class="text-4xl">📚</div>
+      <div>
+        <div class="text-3xl font-bold text-green-700">{{.SpecCount}}</div>
+        <div class="text-sm text-gray-500 font-medium">Plant specs</div>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+      <div class="text-4xl">📅</div>
+      <div>
+        <div class="text-3xl font-bold text-green-700">{{.UpcomingCount}}</div>
+        <div class="text-sm text-gray-500 font-medium">Upcoming (30 days)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-4">
+
+    <!-- Upcoming plantings -->
+    <div class="col-span-2 bg-white rounded-xl border border-gray-200">
+      <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <h2 class="font-semibold text-gray-700">Upcoming Plantings</h2>
+        <a href="/schedule/new" class="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700">+ Add</a>
+      </div>
+      {{if .Upcoming}}
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+          <tr>
+            <th class="px-5 py-2 text-left">Plant</th>
+            <th class="px-5 py-2 text-left">Type</th>
+            <th class="px-5 py-2 text-left">Date</th>
+            <th class="px-5 py-2 text-left">Days</th>
+            <th class="px-5 py-2 text-left">Location</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          {{range .Upcoming}}
+          <tr class="hover:bg-gray-50">
+            <td class="px-5 py-2.5 font-medium text-gray-800">{{.PlantName}}</td>
+            <td class="px-5 py-2.5">
+              <span class="{{typeClass .PlantingType}} px-2 py-0.5 rounded-full text-xs font-medium">{{.PlantingType}}</span>
+            </td>
+            <td class="px-5 py-2.5 text-gray-600">{{.PlannedDate}}</td>
+            <td class="px-5 py-2.5 text-gray-600">
+              {{if eq .DaysAway 0}}today{{else if eq .DaysAway 1}}tomorrow{{else}}{{.DaysAway}}d{{end}}
+            </td>
+            <td class="px-5 py-2.5 text-gray-500">{{.Location}}</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+      {{else}}
+      <div class="px-5 py-8 text-center text-gray-400 text-sm">
+        No upcoming plantings in the next 30 days.
+        <a href="/schedule/new" class="text-green-600 hover:underline ml-1">Add one</a>
+      </div>
+      {{end}}
+    </div>
+
+    <!-- Locale card -->
+    <div class="bg-white rounded-xl border border-gray-200">
+      <div class="px-5 py-4 border-b border-gray-100">
+        <h2 class="font-semibold text-gray-700">Frost Dates</h2>
+      </div>
+      <div class="px-5 py-4 space-y-3 text-sm">
+        {{if or .Zip .State}}
+        <div>
+          <span class="text-gray-500">Locale</span>
+          <div class="font-medium text-gray-800 mt-0.5">
+            {{if .Zip}}ZIP {{.Zip}}{{else}}{{.State}}{{end}}
+          </div>
+        </div>
+        {{if .LastFrost}}
+        <div>
+          <span class="text-gray-500">Last Spring Frost</span>
+          <div class="font-medium text-green-700 mt-0.5">~{{.LastFrost}}</div>
+        </div>
+        <div>
+          <span class="text-gray-500">First Fall Frost</span>
+          <div class="font-medium text-orange-600 mt-0.5">~{{.FirstFrost}}</div>
+        </div>
+        {{end}}
+        <a href="/schedule/suggest" class="block w-full text-center bg-green-600 text-white text-xs px-3 py-2 rounded-lg hover:bg-green-700 mt-2">
+          Suggest Planting Dates
+        </a>
+        {{else}}
+        <p class="text-gray-400">No locale set.</p>
+        <a href="/locale" class="block w-full text-center bg-green-600 text-white text-xs px-3 py-2 rounded-lg hover:bg-green-700">
+          Set Location
+        </a>
+        {{end}}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{{end}}
+
+

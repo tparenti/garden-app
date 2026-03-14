@@ -1,0 +1,75 @@
+{{define "content"}}
+<div class="max-w-lg space-y-4">
+
+  <h1 class="text-2xl font-bold text-gray-800">Locale & Frost Dates</h1>
+
+  <!-- Current frost info -->
+  {{if or .Zip .State}}
+  <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <h2 class="font-semibold text-gray-700 mb-4">Current Location</h2>
+    <div class="grid grid-cols-2 gap-4 text-sm">
+      <div>
+        <div class="text-xs text-gray-500 uppercase font-medium mb-1">Locale</div>
+        <div class="font-semibold text-gray-800">
+          {{if .Zip}}ZIP {{.Zip}}{{if .City}} — {{.City}}, {{.FrostState}}{{end}}
+          {{else}}{{.State}}{{if .City}} — {{.City}}, {{.FrostState}}{{end}}{{end}}
+        </div>
+      </div>
+      {{if .LastFrost}}
+      <div></div>
+      <div>
+        <div class="text-xs text-gray-500 uppercase font-medium mb-1">Last Spring Frost</div>
+        <div class="font-semibold text-green-700 text-base">~{{.LastFrost}}</div>
+        <div class="text-xs text-gray-400 mt-0.5">Average date — plant cold-sensitive crops after this</div>
+      </div>
+      <div>
+        <div class="text-xs text-gray-500 uppercase font-medium mb-1">First Fall Frost</div>
+        <div class="font-semibold text-orange-600 text-base">~{{.FirstFrost}}</div>
+        <div class="text-xs text-gray-400 mt-0.5">Average date — harvest or protect crops before this</div>
+      </div>
+      {{end}}
+    </div>
+
+    <div class="mt-4 pt-4 border-t border-gray-100">
+      <a href="/schedule/suggest"
+         class="inline-block bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+        Suggest Planting Dates
+      </a>
+    </div>
+  </div>
+  {{end}}
+
+  <!-- Set locale form -->
+  <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <h2 class="font-semibold text-gray-700 mb-4">{{if or .Zip .State}}Update Location{{else}}Set Your Location{{end}}</h2>
+    <form method="POST" action="/locale" class="space-y-4">
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+        <input type="text" name="zip" value="{{.Zip}}" maxlength="5" pattern="[0-9]{5}"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+          placeholder="e.g. 80301">
+        <p class="text-xs text-gray-400 mt-1">5-digit US zip code for the most accurate frost dates</p>
+      </div>
+
+      <div class="flex items-center gap-3 text-sm text-gray-400">
+        <div class="flex-1 h-px bg-gray-200"></div>or<div class="flex-1 h-px bg-gray-200"></div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">State Abbreviation</label>
+        <input type="text" name="state" value="{{.State}}" maxlength="2" style="text-transform:uppercase"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+          placeholder="e.g. CO">
+        <p class="text-xs text-gray-400 mt-1">Uses the state median frost date as a fallback</p>
+      </div>
+
+      <button type="submit" class="bg-green-600 text-white text-sm px-5 py-2 rounded-lg hover:bg-green-700 transition-colors">
+        Save Location
+      </button>
+
+    </form>
+  </div>
+
+</div>
+{{end}}
